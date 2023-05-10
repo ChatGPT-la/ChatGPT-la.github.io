@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT.la</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FAFAFA;
+            animation: bg-color 10s infinite alternate;
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1, p {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: grid;
+            grid-template-columns: 1.5fr 2.5fr 1fr 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        li:hover {
+            border-color: #333;
+            box-shadow: 0px 0px 5px #333;
+        }
+
+        .name {
+            cursor: pointer;
+        }
+
+        a, span.url {
+            text-decoration: none;
+            color: #333;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #666;
+        }
+
+        span.url {
+            font-size: 12px;
+            color: #666;
+        }
+
+        span.ping {
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 480px) {
+            .container {
+                padding: 0 20px;
+                box-sizing: border-box;
+                max-width: calc(100% - 5px);
+            }
+
+            li {
+                grid-template-columns: 2.2fr 2fr 1.5fr 1fr;
+                grid-template-rows: auto auto;
+                gap: 5px;
+            }
+
+            span.url {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+
+            }
+
+            span.ping {
+                grid-column: 3 / 4;
+                grid-row: 2 / 3;
+            }
+
+            button {
+                grid-column: 4 / 5;
+                grid-row: 1 / 3;
+            }
+        }
+
+        @keyframes bg-color {
+            0% {
+                background-color: #E6E6FA;
+            }
+            25% {
+                background-color: #FFFAF0;
+            }
+            50% {
+                background-color: #F0F8FF;
+            }
+            75% {
+                background-color: #F8F8FF;
+            }
+            100% {
+                background-color: #F0FFF0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<h1>ChatGPT.la</h1>
+<p>请 Ctrl+D 收藏本页到收藏夹，防止网址失效。</p>
+<div class="container">
+    <ul id="site-list"></ul>
+</div>
+
+<div id="toast" class="toast">链接已复制到粘贴板！</div>
+
+<script>
+    const sites = [
+        {name: 'Chat-a', url: 'https://a.chatgpt.bj'},
+        {name: 'Chat-b', url: 'https://b.chatgpt.bj'},
+        {name: 'Chat-c', url: 'https://c.chatgpt.bj'},
+        {name: 'cngpt(不互通)', url: 'https://cngpt.me'}
+    ];
+
+    const siteList = document.getElementById('site-list');
+
+    function testSites() {
+        sites.forEach(site => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+            <span class="name" onclick="replaceUrl('${site.url}')">${site.name}</span>
+            <span class="url" onclick="copyUrl(this)" title="点击复制链接">${site.url}</span>
+            <span class="ping" onclick="testSite(this)" >检测中...</span>
+            <button class="btn" onclick="openUrl('${site.url}')" title="在新窗口打开链接">访问</button>
+        `;
+            siteList.appendChild(li);
+            testSite(li.querySelector('.ping'));
+        });
+    }
+
+    function generateRandomString() {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        for (let i = 0; i < 10; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    function testSite(button) {
+        const li = button.parentNode;
+        const ping = li.querySelector('.ping');
+        ping.textContent = '检测中...';
+
+        const startTime = new Date().getTime();
+        fetch(li.querySelector('.url').textContent+'?q='+generateRandomString(), {mode: 'no-cors'})
+            .then(() => {
+                const endTime = new Date().getTime();
+                ping.textContent = '' + (endTime - startTime) + 'ms';
+            })
+            .catch(() => {
+                ping.textContent = '超时';
+            });
+    }
+
+    function openUrl(url) {
+        window.open(url);
+    }
+
+    function replaceUrl(url) {
+        window.location = url;
+    }
+
+    function copyUrl(span) {
+        const url = span.textContent;
+        copyStr(url)
+    }
+
+    function copyStr(val) { //val 是要复制的字符串
+        var input = document.createElement("input");
+        input.value = val;
+        input.readOnly = true
+        document.body.appendChild(input);
+        input.select();
+        input.setSelectionRange(0, input.value.length)
+        document.execCommand('Copy');
+        document.body.removeChild(input);
+        window.scrollTo(0, 0)
+        showToast();
+    }
+
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+
+    testSites();
+</script>
+</body>
+
+</html>
